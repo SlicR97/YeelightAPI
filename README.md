@@ -1,13 +1,5 @@
-[![Build Status](https://romainoddone.visualstudio.com/Github%20Builds/_apis/build/status/YeelightAPI?branchName=master)](https://romainoddone.visualstudio.com/Github%20Builds/_build/latest?definitionId=7&branchName=master)
-[![NuGet Package](https://img.shields.io/nuget/v/YeelightAPI.svg)](https://www.nuget.org/packages/YeelightAPI/)
-[![NuGet Downloads](https://img.shields.io/nuget/dt/YeelightAPI.svg)](https://www.nuget.org/packages/YeelightAPI/)
-[![Donate](https://img.shields.io/badge/%24-donate-ff00ff.svg)](https://www.paypal.me/roddone)
-
 # YeelightAPI
 C# API (.Net) to control Xiaomi Yeelight Color Bulbs
-
-## Contribution
-If you find this package useful, please make a gift on Paypal : [https://www.paypal.me/roddone](https://www.paypal.me/roddone)
 
 ## Prerequisites
 * The console project uses C# 7.1 "Async Main Method" Feature, make sure your visual studio version is up to date !
@@ -147,18 +139,3 @@ Example :
        Console.WriteLine($"A device has been found : {e.Device}");
    };
 ```
-
-## VNext
-* correct bugs if needed
-
-Nothing else planned, if you have any ideas please contact me at ["romain.oddone.github@outlook.com"](mailto:romain.oddone.github@outlook.com) 
-
-## Help
-If there is a functionality that you need which is not implemented, or even worse if there is a bug, you can create a pull request or contacts me at ["romain.oddone.github@outlook.com"](mailto:romain.oddone.github@outlook.com)
-
-## Licence
-
-Apache Licence
-
-## Source
-This code is an implementation of the ["Yeelight WiFi Light Inter-Operation Specification"](http://www.yeelight.com/download/Yeelight_Inter-Operation_Spec.pdf "Link to Yeelight WiFi Light Inter-Operation Specification") as defined on January 1st, 2018
