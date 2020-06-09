@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using YeelightAPI.Core;
+using YeelightAPI.Interfaces;
 using YeelightAPI.Models;
 using YeelightAPI.Models.Adjust;
 using YeelightAPI.Models.ColorFlow;
@@ -14,8 +15,6 @@ namespace YeelightAPI
     /// </summary>
     public partial class Device : IBackgroundDeviceController
     {
-        #region Public Methods
-
         /// <summary>
         /// Adjusts the brightness
         /// </summary>
@@ -24,13 +23,13 @@ namespace YeelightAPI
         /// <returns></returns>
         public async Task<bool> BackgroundAdjustBright(int percent, int? duration = null)
         {
-            List<object> parameters = new List<object>() { };
+            var parameters = new List<object>();
             HandlePercentValue(ref parameters, percent);
             parameters.Add(Math.Max(duration ?? 0, Constants.MinimumSmoothDuration));
 
-            CommandResult<List<string>> result = await ExecuteCommandWithResponse<List<string>>(
-                method: METHODS.BackgroundAdjustBright,
-                parameters: parameters);
+            var result = await ExecuteCommandWithResponse<List<string>>(
+                Methods.BackgroundAdjustBright,
+                parameters);
 
             return result.IsOk();
         }
@@ -43,13 +42,13 @@ namespace YeelightAPI
         /// <returns></returns>
         public async Task<bool> BackgroundAdjustColor(int percent, int? duration = null)
         {
-            List<object> parameters = new List<object>() { };
+            var parameters = new List<object>();
             HandlePercentValue(ref parameters, percent);
             parameters.Add(Math.Max(duration ?? 0, Constants.MinimumSmoothDuration));
 
-            CommandResult<List<string>> result = await ExecuteCommandWithResponse<List<string>>(
-                method: METHODS.BackgroundAdjustColor,
-                parameters: parameters);
+            var result = await ExecuteCommandWithResponse<List<string>>(
+                Methods.BackgroundAdjustColor,
+                parameters);
 
             return result.IsOk();
         }
@@ -62,13 +61,13 @@ namespace YeelightAPI
         /// <returns></returns>
         public async Task<bool> BackgroundAdjustColorTemperature(int percent, int? duration = null)
         {
-            List<object> parameters = new List<object>() { };
+            var parameters = new List<object>();
             HandlePercentValue(ref parameters, percent);
             parameters.Add(Math.Max(duration ?? 0, Constants.MinimumSmoothDuration));
 
-            CommandResult<List<string>> result = await ExecuteCommandWithResponse<List<string>>(
-                method: METHODS.BackgroundAdjustColorTemperature,
-                parameters: parameters);
+            var result = await ExecuteCommandWithResponse<List<string>>(
+                Methods.BackgroundAdjustColorTemperature,
+                parameters);
 
             return result.IsOk();
         }
@@ -79,7 +78,7 @@ namespace YeelightAPI
         /// <returns></returns>
         public FluentFlow BackgroundFlow()
         {
-            return new FluentFlow(this, BackgroundStartColorFlow, BackgroundStopColorFlow);
+            return new FluentFlow(BackgroundStartColorFlow, BackgroundStopColorFlow);
         }
 
         /// <summary>
@@ -90,11 +89,11 @@ namespace YeelightAPI
         /// <returns></returns>
         public async Task<bool> BackgroundSetAdjust(AdjustAction action, AdjustProperty property)
         {
-            List<object> parameters = new List<object>() { action.ToString(), property.ToString() };
+            var parameters = new List<object>() { action.ToString(), property.ToString() };
 
-            CommandResult<List<string>> result = await ExecuteCommandWithResponse<List<string>>(
-                method: METHODS.SetBackgroundLightAdjust,
-                parameters: parameters);
+            var result = await ExecuteCommandWithResponse<List<string>>(
+                Methods.SetBackgroundLightAdjust,
+                parameters);
 
             return result.IsOk();
         }
@@ -107,13 +106,13 @@ namespace YeelightAPI
         /// <returns></returns>
         public async Task<bool> BackgroundSetBrightness(int value, int? smooth = null)
         {
-            List<object> parameters = new List<object>() { value };
+            var parameters = new List<object>() { value };
 
             HandleSmoothValue(ref parameters, smooth);
 
-            CommandResult<List<string>> result = await ExecuteCommandWithResponse<List<string>>(
-                method: METHODS.SetBackgroundLightBrightness,
-                parameters: parameters);
+            var result = await ExecuteCommandWithResponse<List<string>>(
+                Methods.SetBackgroundLightBrightness,
+                parameters);
 
             return result.IsOk();
         }
@@ -126,13 +125,13 @@ namespace YeelightAPI
         /// <returns></returns>
         public async Task<bool> BackgroundSetColorTemperature(int temperature, int? smooth = null)
         {
-            List<object> parameters = new List<object>() { temperature };
+            var parameters = new List<object>() { temperature };
 
             HandleSmoothValue(ref parameters, smooth);
 
-            CommandResult<List<string>> result = await ExecuteCommandWithResponse<List<string>>(
-                method: METHODS.SetBackgroundColorTemperature,
-                parameters: parameters);
+            var result = await ExecuteCommandWithResponse<List<string>>(
+                Methods.SetBackgroundColorTemperature,
+                parameters);
 
             return result.IsOk();
         }
@@ -143,7 +142,7 @@ namespace YeelightAPI
         /// <returns></returns>
         public async Task<bool> BackgroundSetDefault()
         {
-            CommandResult<List<string>> result = await ExecuteCommandWithResponse<List<string>>(METHODS.SetBackgroundLightDefault);
+            var result = await ExecuteCommandWithResponse<List<string>>(Methods.SetBackgroundLightDefault);
 
             return result.IsOk();
         }
@@ -155,15 +154,15 @@ namespace YeelightAPI
         /// <param name="sat"></param>
         /// <param name="smooth"></param>
         /// <returns></returns>
-        public async Task<bool> BackgroundSetHSVColor(int hue, int sat, int? smooth = null)
+        public async Task<bool> BackgroundSetHsvColor(int hue, int sat, int? smooth = null)
         {
-            List<object> parameters = new List<object>() { hue, sat };
+            var parameters = new List<object>() { hue, sat };
 
             HandleSmoothValue(ref parameters, smooth);
 
-            CommandResult<List<string>> result = await ExecuteCommandWithResponse<List<string>>(
-                method: METHODS.SetBackgroundLightHSVColor,
-                parameters: parameters);
+            var result = await ExecuteCommandWithResponse<List<string>>(
+                Methods.SetBackgroundLightHsvColor,
+                parameters);
 
             return result.IsOk();
         }
@@ -177,13 +176,13 @@ namespace YeelightAPI
         /// <returns></returns>
         public async Task<bool> BackgroundSetPower(bool state = true, int? smooth = null, PowerOnMode mode = PowerOnMode.Normal)
         {
-            List<object> parameters = new List<object>() { state ? Constants.On : Constants.Off };
+            var parameters = new List<object>() { state ? Constants.On : Constants.Off };
             HandleSmoothValue(ref parameters, smooth);
             parameters.Add((int)mode);
 
-            CommandResult<List<string>> result = await ExecuteCommandWithResponse<List<string>>(
-                method: METHODS.SetBackgroundLightPower,
-                parameters: parameters
+            var result = await ExecuteCommandWithResponse<List<string>>(
+                Methods.SetBackgroundLightPower,
+                parameters
             );
 
             return result.IsOk();
@@ -197,17 +196,17 @@ namespace YeelightAPI
         /// <param name="b"></param>
         /// <param name="smooth"></param>
         /// <returns></returns>
-        public async Task<bool> BackgroundSetRGBColor(int r, int g, int b, int? smooth = null)
+        public async Task<bool> BackgroundSetRgbColor(int r, int g, int b, int? smooth = null)
         {
             //Convert RGB into integer 0x00RRGGBB
-            int value = ColorHelper.ComputeRGBColor(r, g, b);
-            List<object> parameters = new List<object>() { value };
+            var value = ColorHelper.ComputeRgbColor(r, g, b);
+            var parameters = new List<object>() { value };
 
             HandleSmoothValue(ref parameters, smooth);
 
-            CommandResult<List<string>> result = await ExecuteCommandWithResponse<List<string>>(
-                method: METHODS.SetBackgroundLightRGBColor,
-                parameters: parameters);
+            var result = await ExecuteCommandWithResponse<List<string>>(
+                Methods.SetBackgroundLightRgbColor,
+                parameters);
 
             return result.IsOk();
         }
@@ -221,9 +220,9 @@ namespace YeelightAPI
         {
             List<object> parameters = scene;
 
-            CommandResult<List<string>> result = await ExecuteCommandWithResponse<List<string>>(
-                method: METHODS.SetBackgroundLightScene,
-                parameters: parameters);
+            var result = await ExecuteCommandWithResponse<List<string>>(
+                Methods.SetBackgroundLightScene,
+                parameters);
 
             return result.IsOk();
         }
@@ -235,11 +234,11 @@ namespace YeelightAPI
         /// <returns></returns>
         public async Task<bool> BackgroundStartColorFlow(ColorFlow flow)
         {
-            List<object> parameters = new List<object>() { flow.RepetitionCount * flow.Count, (int)flow.EndAction, flow.GetColorFlowExpression() };
+            var parameters = new List<object>() { flow.RepetitionCount * flow.Count, (int)flow.EndAction, flow.GetColorFlowExpression() };
 
-            CommandResult<List<string>> result = await ExecuteCommandWithResponse<List<string>>(
-                method: METHODS.StartBackgroundLightColorFlow,
-                parameters: parameters);
+            var result = await ExecuteCommandWithResponse<List<string>>(
+                Methods.StartBackgroundLightColorFlow,
+                parameters);
 
             return result.IsOk();
         }
@@ -250,8 +249,8 @@ namespace YeelightAPI
         /// <returns></returns>
         public async Task<bool> BackgroundStopColorFlow()
         {
-            CommandResult<List<string>> result = await ExecuteCommandWithResponse<List<string>>(
-                            method: METHODS.StopBackgroundLightColorFlow);
+            var result = await ExecuteCommandWithResponse<List<string>>(
+                            Methods.StopBackgroundLightColorFlow);
 
             return result.IsOk();
         }
@@ -262,7 +261,7 @@ namespace YeelightAPI
         /// <returns></returns>
         public async Task<bool> BackgroundToggle()
         {
-            CommandResult<List<string>> result = await ExecuteCommandWithResponse<List<string>>(METHODS.ToggleBackgroundLight);
+            var result = await ExecuteCommandWithResponse<List<string>>(Methods.ToggleBackgroundLight);
 
             return result.IsOk();
         }
@@ -274,12 +273,12 @@ namespace YeelightAPI
         /// <returns></returns>
         public async Task<bool> BackgroundTurnOff(int? smooth = null)
         {
-            List<object> parameters = new List<object>() { Constants.Off };
+            var parameters = new List<object>() { Constants.Off };
             HandleSmoothValue(ref parameters, smooth);
 
-            CommandResult<List<string>> result = await ExecuteCommandWithResponse<List<string>>(
-                method: METHODS.SetBackgroundLightPower,
-                parameters: parameters);
+            var result = await ExecuteCommandWithResponse<List<string>>(
+                Methods.SetBackgroundLightPower,
+                parameters);
 
             return result.IsOk();
         }
@@ -292,13 +291,13 @@ namespace YeelightAPI
         /// <returns></returns>
         public async Task<bool> BackgroundTurnOn(int? smooth = null, PowerOnMode mode = PowerOnMode.Normal)
         {
-            List<object> parameters = new List<object>() { Constants.On };
+            var parameters = new List<object>() { Constants.On };
             HandleSmoothValue(ref parameters, smooth);
             parameters.Add((int)mode);
 
-            CommandResult<List<string>> result = await ExecuteCommandWithResponse<List<string>>(
-                method: METHODS.SetBackgroundLightPower,
-                parameters: parameters);
+            var result = await ExecuteCommandWithResponse<List<string>>(
+                Methods.SetBackgroundLightPower,
+                parameters);
 
             return result.IsOk();
         }
@@ -309,11 +308,9 @@ namespace YeelightAPI
         /// <returns></returns>
         public async Task<bool> DevToggle()
         {
-            CommandResult<List<string>> result = await ExecuteCommandWithResponse<List<string>>(METHODS.ToggleDev);
+            var result = await ExecuteCommandWithResponse<List<string>>(Methods.ToggleDev);
 
             return result.IsOk();
         }
-
-        #endregion Public Methods
     }
 }

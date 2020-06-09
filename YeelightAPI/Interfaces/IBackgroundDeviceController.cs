@@ -4,15 +4,13 @@ using YeelightAPI.Models.Adjust;
 using YeelightAPI.Models.ColorFlow;
 using YeelightAPI.Models.Scene;
 
-namespace YeelightAPI
+namespace YeelightAPI.Interfaces
 {
     /// <summary>
     /// Descriptor for Devices Background Operations
     /// </summary>
     public interface IBackgroundDeviceController
     {
-        #region Public Methods
-
         /// <summary>
         /// Adjusts the brightness
         /// </summary>
@@ -80,7 +78,7 @@ namespace YeelightAPI
         /// <param name="sat"></param>
         /// <param name="smooth"></param>
         /// <returns></returns>
-        Task<bool> BackgroundSetHSVColor(int hue, int sat, int? smooth = null);
+        Task<bool> BackgroundSetHsvColor(int hue, int sat, int? smooth = null);
 
         /// <summary>
         /// Set Power
@@ -99,7 +97,7 @@ namespace YeelightAPI
         /// <param name="b"></param>
         /// <param name="smooth"></param>
         /// <returns></returns>
-        Task<bool> BackgroundSetRGBColor(int r, int g, int b, int? smooth = null);
+        Task<bool> BackgroundSetRgbColor(int r, int g, int b, int? smooth = null);
 
         /// <summary>
         /// Set a scene
@@ -147,7 +145,5 @@ namespace YeelightAPI
         /// </summary>
         /// <returns></returns>
         Task<bool> DevToggle();
-
-        #endregion Public Methods
     }
 }

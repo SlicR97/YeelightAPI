@@ -8,8 +8,6 @@ namespace YeelightAPI.Core
     /// </summary>
     internal static class Constants
     {
-        #region Public Fields
-
         /// <summary>
         /// Default port value
         /// </summary>
@@ -52,7 +50,5 @@ namespace YeelightAPI.Core
         {
             ContractResolver = new CamelCasePropertyNamesContractResolver()
         };
-
-        #endregion Public Fields
     }
 }

@@ -5,8 +5,6 @@
     /// </summary>
     public class CronResult
     {
-        #region Public Properties
-
         /// <summary>
         /// ???
         /// </summary>
@@ -21,7 +19,5 @@
         /// Type of the cron task
         /// </summary>
         public int Type { get; set; }
-
-        #endregion Public Properties
     }
 }

@@ -7,8 +7,6 @@ namespace YeelightAPI.Models
     /// </summary>
     public static class CommandResultExtensions
     {
-        #region Public Methods
-
         /// <summary>
         /// Determine if the result is a classical OK result ({"id":1, "result":["ok"]})
         /// </summary>
@@ -18,8 +16,6 @@ namespace YeelightAPI.Models
         {
             return @this?.Error == null && @this?.Result?[0] == "ok";
         }
-
-        #endregion Public Methods
     }
 
     /// <summary>
@@ -27,8 +23,6 @@ namespace YeelightAPI.Models
     /// </summary>
     public class CommandResult
     {
-        #region Public Properties
-
         /// <summary>
         /// Error, null if command is successful
         /// </summary>
@@ -38,18 +32,12 @@ namespace YeelightAPI.Models
         /// Request Id (mirrored from the sent request)
         /// </summary>
         public int Id { get; set; }
-
-        #endregion Public Properties
-
-        #region Public Classes
-
+        
         /// <summary>
         /// Error model
         /// </summary>
         public class CommandErrorResult
         {
-            #region Public Properties
-
             /// <summary>
             /// Error code
             /// </summary>
@@ -59,11 +47,7 @@ namespace YeelightAPI.Models
             /// Error message
             /// </summary>
             public string Message { get; set; }
-
-            #endregion Public Properties
-
-            #region Public Methods
-
+            
             /// <summary>
             /// ToString override
             /// </summary>
@@ -72,11 +56,7 @@ namespace YeelightAPI.Models
             {
                 return $"{Code} - {Message}";
             }
-
-            #endregion Public Methods
         }
-
-        #endregion Public Classes
     }
 
     /// <summary>
@@ -84,13 +64,9 @@ namespace YeelightAPI.Models
     /// </summary>
     public class CommandResult<T> : CommandResult
     {
-        #region Public Properties
-
         /// <summary>
         /// Result
         /// </summary>
         public T Result { get; set; }
-
-        #endregion Public Properties
     }
 }

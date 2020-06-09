@@ -2,6 +2,7 @@
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using YeelightAPI.Models;
 
 namespace YeelightAPI.Core
@@ -11,8 +12,6 @@ namespace YeelightAPI.Core
     /// </summary>
     public class PropertiesDictionaryConverter : JsonConverter
     {
-        #region Public Methods
-
         /// <summary>
         /// Can convert
         /// </summary>
@@ -33,23 +32,20 @@ namespace YeelightAPI.Core
         /// <returns></returns>
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
-            JObject jsonObject = JObject.Load(reader);
-            Dictionary<PROPERTIES, object> dict = new Dictionary<PROPERTIES, object>();
+            var jsonObject = JObject.Load(reader);
+            var dict = new Dictionary<Properties, object>();
 
-            foreach (JProperty child in jsonObject.Children())
+            foreach (var jToken in jsonObject.Children())
             {
+                var child = (JProperty) jToken;
                 //skip if the property is not in PROPERTIES enum
-                if (Enum.TryParse<PROPERTIES>(child.Name, out PROPERTIES prop))
+                if (Enum.TryParse(child.Name, out Properties prop))
                 {
                     //only integers and string
-                    if (child.Value.Type == JTokenType.Integer)
-                    {
-                        dict.Add(prop, child.ToObject(typeof(decimal)));
-                    }
-                    else
-                    {
-                        dict.Add(prop, child.Value.ToString());
-                    }
+                    dict.Add(prop,
+                        child.Value.Type == JTokenType.Integer
+                            ? child.ToObject(typeof(decimal))
+                            : child.Value.ToString());
                 }
             }
 
@@ -64,10 +60,8 @@ namespace YeelightAPI.Core
         /// <param name="serializer"></param>
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
-            JToken token = JToken.FromObject(value);
+            var token = JToken.FromObject(value);
             token.WriteTo(writer);
         }
-
-        #endregion Public Methods
     }
 }

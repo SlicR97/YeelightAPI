@@ -8,16 +8,16 @@
         /// <summary>
         /// Increase the value
         /// </summary>
-        increase = 0,
+        Increase = 0,
 
         /// <summary>
         /// Decrease the value
         /// </summary>
-        decrease = 1,
+        Decrease = 1,
 
         /// <summary>
         /// Increase the value and go back to 1 if the maximum value is reached
         /// </summary>
-        circle = 2
+        Circle = 2
     }
 }

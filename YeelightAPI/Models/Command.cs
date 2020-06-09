@@ -7,8 +7,6 @@ namespace YeelightAPI.Models
     /// </summary>
     public class Command
     {
-        #region Public Properties
-
         /// <summary>
         /// Request Id
         /// </summary>
@@ -23,7 +21,5 @@ namespace YeelightAPI.Models
         /// Parameters
         /// </summary>
         public IList<object> Params { get; set; }
-
-        #endregion Public Properties
     }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using YeelightAPI.Core;
+using YeelightAPI.Interfaces;
 using YeelightAPI.Models;
 using YeelightAPI.Models.Cron;
 
@@ -13,8 +14,6 @@ namespace YeelightAPI
     /// </summary>
     public partial class Device : IDeviceReader
     {
-        #region Public Methods
-
         /// <summary>
         /// Get a cron JOB
         /// </summary>
@@ -22,11 +21,11 @@ namespace YeelightAPI
         /// <returns></returns>
         public async Task<CronResult> CronGet(CronType type = CronType.PowerOff)
         {
-            List<object> parameters = new List<object>() { (int)type };
+            var parameters = new List<object>() { (int)type };
 
-            CommandResult<CronResult[]> result = await ExecuteCommandWithResponse<CronResult[]>(
-                            method: METHODS.GetCron,
-                            parameters: parameters);
+            var result = await ExecuteCommandWithResponse<CronResult[]>(
+                            Methods.GetCron,
+                            parameters);
 
             return result?.Result?.FirstOrDefault();
         }
@@ -35,23 +34,19 @@ namespace YeelightAPI
         /// Get all the properties asynchronously
         /// </summary>
         /// <returns></returns>
-        public async Task<Dictionary<PROPERTIES, object>> GetAllProps()
-        {
-            Dictionary<PROPERTIES, object> result = await GetProps(PROPERTIES.ALL);
-
-            return result;
-        }
+        public async Task<Dictionary<Properties, object>> GetAllProps()
+            => await GetProps(Models.Properties.All);
 
         /// <summary>
         /// Get a single property value asynchronously
         /// </summary>
         /// <param name="prop"></param>
         /// <returns></returns>
-        public async Task<object> GetProp(PROPERTIES prop)
+        public async Task<object> GetProp(Properties prop)
         {
-            CommandResult<List<string>> result = await ExecuteCommandWithResponse<List<string>>(
-                method: METHODS.GetProp,
-                parameters: new List<object>() { prop.ToString() } );
+            var result = await ExecuteCommandWithResponse<List<string>>(
+                Methods.GetProp,
+                new List<object>() { prop.ToString() } );
 
             return result?.Result?.Count == 1 ? result.Result[0] : null;
         }
@@ -61,50 +56,48 @@ namespace YeelightAPI
         /// </summary>
         /// <param name="props"></param>
         /// <returns></returns>
-        public async Task<Dictionary<PROPERTIES, object>> GetProps(PROPERTIES props)
+        public async Task<Dictionary<Properties, object>> GetProps(Properties props)
         {
-            List<object> names = props.GetRealNames();
-            List<string> results = new List<string>();
+            var names = props.GetRealNames();
+            var results = new List<string>();
             if (names.Count <= 20)
             {
-                CommandResult<List<string>> commandResult = await ExecuteCommandWithResponse<List<string>>(
-                    method: METHODS.GetProp,
-                    parameters: names
+                var commandResult = await ExecuteCommandWithResponse<List<string>>(
+                    Methods.GetProp,
+                    names
                     );
-
-                results.AddRange(commandResult?.Result);
+                
+                if (commandResult == null) throw new Exception();
+                results.AddRange(commandResult.Result);
             }
             else
             {
-
-                CommandResult<List<string>> commandResult1 = await ExecuteCommandWithResponse<List<string>>(
-                    method: METHODS.GetProp,
-                    parameters: names.Take(20).ToList() );
-                CommandResult<List<string>> commandResult2 = await ExecuteCommandWithResponse<List<string>>(
-                    method: METHODS.GetProp,
-                    parameters: names.Skip(20).ToList());
-
-                results.AddRange(commandResult1?.Result);
-                results.AddRange(commandResult2?.Result);
+                var commandResult1 = await ExecuteCommandWithResponse<List<string>>(
+                    Methods.GetProp,
+                    names.Take(20).ToList() );
+                var commandResult2 = await ExecuteCommandWithResponse<List<string>>(
+                    Methods.GetProp,
+                    names.Skip(20).ToList());
+                
+                if (commandResult1 == null || commandResult2 == null) throw new Exception();
+                results.AddRange(commandResult1.Result);
+                results.AddRange(commandResult2.Result);
             }
 
-            if (results.Count > 0)
+            if (results.Count <= 0) return null;
+            var result = new Dictionary<Properties, object>();
+
+            for (var n = 0; n < names.Count; n++)
             {
-                Dictionary<PROPERTIES, object> result = new Dictionary<PROPERTIES, object>();
+                var name = names[n].ToString();
 
-                for (int n = 0; n < names.Count; n++)
+                if (Enum.TryParse(name, out Properties p))
                 {
-                    string name = names[n].ToString();
-
-                    if (Enum.TryParse<PROPERTIES>(name, out PROPERTIES p))
-                    {
-                        result.Add(p, results[n]);
-                    }
+                    result.Add(p, results[n]);
                 }
-
-                return result;
             }
-            return null;
+
+            return result;
         }
 
         /// <summary>
@@ -114,23 +107,16 @@ namespace YeelightAPI
         /// <returns></returns>
         public async Task<bool> SetName(string name)
         {
-            List<object> parameters = new List<object>() { name };
+            var parameters = new List<object>() { name };
 
-            CommandResult<List<string>> result = await ExecuteCommandWithResponse<List<string>>(
-                            method: METHODS.SetName,
-                            parameters: parameters);
+            var result = await ExecuteCommandWithResponse<List<string>>(
+                            Methods.SetName,
+                            parameters);
 
-            if (result.IsOk())
-            {
-                Name = name;
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            if (!result.IsOk()) return false;
+            
+            Name = name;
+            return true;
         }
-
-        #endregion Public Methods
     }
 }

@@ -3,15 +3,13 @@ using System.Threading.Tasks;
 using YeelightAPI.Models;
 using YeelightAPI.Models.Cron;
 
-namespace YeelightAPI
+namespace YeelightAPI.Interfaces
 {
     /// <summary>
     /// Descriptor for Device Reading operations
     /// </summary>
     public interface IDeviceReader
     {
-        #region Public Methods
-
         /// <summary>
         /// Get a cron task
         /// </summary>
@@ -23,21 +21,21 @@ namespace YeelightAPI
         /// Get all properties values
         /// </summary>
         /// <returns></returns>
-        Task<Dictionary<PROPERTIES, object>> GetAllProps();
+        Task<Dictionary<Properties, object>> GetAllProps();
 
         /// <summary>
         /// Get a single property value
         /// </summary>
         /// <param name="prop"></param>
         /// <returns></returns>
-        Task<object> GetProp(PROPERTIES prop);
+        Task<object> GetProp(Properties prop);
 
         /// <summary>
         /// Get multiple properties values
         /// </summary>
         /// <param name="props"></param>
         /// <returns></returns>
-        Task<Dictionary<PROPERTIES, object>> GetProps(PROPERTIES props);
+        Task<Dictionary<Properties, object>> GetProps(Properties props);
 
         /// <summary>
         /// Set the name of the device
@@ -45,7 +43,5 @@ namespace YeelightAPI
         /// <param name="name"></param>
         /// <returns></returns>
         Task<bool> SetName(string name);
-
-        #endregion Public Methods
     }
 }

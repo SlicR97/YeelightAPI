@@ -1,12 +1,10 @@
 using Microsoft.Extensions.Configuration;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using Xunit;
 using System.Linq;
 using YeelightAPI.Models;
-using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 
 namespace YeelightAPI.UnitTests
@@ -18,19 +16,17 @@ namespace YeelightAPI.UnitTests
 
         public YeelightUnitTest(Xunit.Abstractions.ITestOutputHelper testOutputHelper)
         {
-            this._config = new ConfigurationBuilder()
+            _config = new ConfigurationBuilder()
              .AddJsonFile("config.json")
              .Build();
 
-            this._output = testOutputHelper;
+            _output = testOutputHelper;
         }
-
-        #region TESTS
 
         [Fact]
         public async Task Discovery_should_find_devices()
         {
-            int expectedDevicesCount = GetConfig<int>("discovery_devices_expected");
+            var expectedDevicesCount = GetConfig<int>("discovery_devices_expected");
             var devices = await DeviceLocator.Discover();
 
             Assert.Equal(expectedDevicesCount, devices?.Count);
@@ -39,7 +35,7 @@ namespace YeelightAPI.UnitTests
         [Fact]
         public async Task Discovery_should_not_last_long()
         {
-            Stopwatch sw = Stopwatch.StartNew();
+            var sw = Stopwatch.StartNew();
             _ = await DeviceLocator.Discover();
             sw.Stop();
 
@@ -47,53 +43,49 @@ namespace YeelightAPI.UnitTests
         }
 
         [Fact]
-        public async Task Device_should_turnon_and_turnoff()
+        public async Task Device_should_turn_on_and_turn_off()
         {
-            Device testedDevice = await GetRandomConnectedDevice();
+            var testedDevice = await GetRandomConnectedDevice();
             await testedDevice.TurnOn();
-            Assert.Equal("on", await testedDevice.GetProp(PROPERTIES.power));
+            Assert.Equal("on", await testedDevice.GetProp(Properties.Power));
             await testedDevice.TurnOff();
-            Assert.Equal("off", await testedDevice.GetProp(PROPERTIES.power));
+            Assert.Equal("off", await testedDevice.GetProp(Properties.Power));
         }
 
         [Fact]
         public async Task Device_should_change_rgb_color_to_red() => await DoWithRandomDevice(async (device) =>
         {
-            await device.SetRGBColor(255, 0, 0);
-            Assert.Equal((255 << 16).ToString(), await device.GetProp(PROPERTIES.rgb));
-        }, METHODS.SetRGBColor);
+            await device.SetRgbColor(255, 0, 0);
+            Assert.Equal((255 << 16).ToString(), await device.GetProp(Properties.Rgb));
+        }, Methods.SetRgbColor);
 
         [Fact]
         public async Task Device_should_change_hsv_color_to_red() => await DoWithRandomDevice(async (device) =>
         {
-            await device.SetHSVColor(0, 100);
-            Assert.Equal((255 << 16).ToString(), await device.GetProp(PROPERTIES.rgb));
+            await device.SetHsvColor(0, 100);
+            Assert.Equal((255 << 16).ToString(), await device.GetProp(Properties.Rgb));
 
-        }, METHODS.SetHSVColor);
+        }, Methods.SetHsvColor);
 
         [Fact]
         public async Task Device_should_change_brightness() => await DoWithRandomDevice(async (device) =>
         {
             await device.SetBrightness(52);
-            Assert.Equal(52, await device.GetProp(PROPERTIES.bright));
+            Assert.Equal(52, await device.GetProp(Properties.Bright));
 
-        }, METHODS.SetBrightness);
+        }, Methods.SetBrightness);
 
         [Fact]
-        public async Task Device_should_change_colortemperature() => await DoWithRandomDevice(async (device) =>
+        public async Task Device_should_change_color_temperature() => await DoWithRandomDevice(async (device) =>
         {
             await device.SetColorTemperature(4654);
-            Assert.Equal(4654, await device.GetProp(PROPERTIES.ct));
+            Assert.Equal(4654, await device.GetProp(Properties.Ct));
 
-        }, METHODS.SetBrightness);
+        }, Methods.SetBrightness);
 
-        #endregion TESTS
-
-        #region PRIVATE METHODS
-
-        private async Task DoWithRandomDevice(Action<Device> a, METHODS? supportedMethod = null)
+        private async Task DoWithRandomDevice(Action<Device> a, Methods? supportedMethod = null)
         {
-            Device testedDevice = await GetRandomConnectedDevice(supportedMethod);
+            var testedDevice = await GetRandomConnectedDevice(supportedMethod);
             await testedDevice.TurnOn();
 
             a?.Invoke(testedDevice);
@@ -101,25 +93,27 @@ namespace YeelightAPI.UnitTests
             await testedDevice.TurnOff();
         }
 
-        private async Task<Device> GetRandomConnectedDevice(METHODS? supportedMethod = null)
+        private async Task<Device> GetRandomConnectedDevice(Methods? supportedMethod = null)
         {
-            List<Device> devices = (await DeviceLocator.Discover()).FindAll(d => !supportedMethod.HasValue || d.SupportedOperations.Contains(supportedMethod.Value));
+            var devices = (await DeviceLocator.Discover()).FindAll(
+                discoveredDevice => !supportedMethod.HasValue || discoveredDevice.SupportedOperations.Contains(supportedMethod.Value)
+            );
 
             Assert.NotEmpty(devices);
 
-            int randomIndex = new Random().Next(0, devices.Count);
-            Device d = devices.ElementAt(randomIndex);
-            _output.WriteLine($"Used device : {d.ToString()}");
-            await d.Connect();
-            return d;
+            var randomIndex = new Random().Next(0, devices.Count);
+            var device = devices.ElementAt(randomIndex);
+            _output.WriteLine($"Used device : {device}");
+            await device.Connect();
+            return device;
         }
 
         private T GetConfig<T>(string key)
         {
-            Type t = typeof(T);
+            var t = typeof(T);
             var value = _config[key];
 
-            TypeConverter converter = TypeDescriptor.GetConverter(t);
+            var converter = TypeDescriptor.GetConverter(t);
             try
             //if (value != null && converter.CanConvertTo(t) && converter.CanConvertFrom(typeof(string)))
             {
@@ -130,7 +124,5 @@ namespace YeelightAPI.UnitTests
                 throw new Exception($"Cannot convert '{value}' (key: {key}) to {t}", ex);
             }
         }
-
-        #endregion PRIVATE METHODS
     }
 }

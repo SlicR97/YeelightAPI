@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using YeelightAPI.Core;
+using YeelightAPI.Events;
 using YeelightAPI.Models;
 
 namespace YeelightAPI
@@ -15,8 +16,6 @@ namespace YeelightAPI
     /// </summary>
     public partial class Device : IDisposable
     {
-        #region PRIVATE ATTRIBUTES
-
         /// <summary>
         /// Dictionary of results
         /// </summary>
@@ -30,17 +29,13 @@ namespace YeelightAPI
         /// <summary>
         /// The unique id to send when executing a command.
         /// </summary>
-        private int _uniqueId = 0;
+        private int _uniqueId;
 
         /// <summary>
         /// TCP client used to communicate with the device
         /// </summary>
         private TcpClient _tcpClient;
-
-        #endregion PRIVATE ATTRIBUTES
-
-        #region EVENTS
-
+        
         /// <summary>
         /// Notification Received event
         /// </summary>
@@ -65,10 +60,6 @@ namespace YeelightAPI
         /// <param name="e"></param>
         public delegate void NotificationReceivedEventHandler(object sender, NotificationReceivedEventArgs e);
 
-        #endregion EVENTS
-
-        #region PUBLIC PROPERTIES
-
         /// <summary>
         /// HostName
         /// </summary>
@@ -82,27 +73,18 @@ namespace YeelightAPI
         /// <summary>
         /// Gets a value indicating if the connection to Device is established
         /// </summary>
-        public bool IsConnected
-        {
-            get
-            {
-                return _tcpClient != null && _tcpClient.IsConnected();
-            }
-        }
+        // ReSharper disable once InconsistentlySynchronizedField
+        public bool IsConnected => _tcpClient != null && _tcpClient.IsConnected();
 
         /// <summary>
         /// The model.
         /// </summary>
-        public MODEL Model { get; }
+        public Model Model { get; }
 
         /// <summary>
         /// Port number
         /// </summary>
         public int Port { get; }
-
-        #endregion PUBLIC PROPERTIES
-
-        #region CONSTRUCTOR
 
         /// <summary>
         /// Constructor with a hostname and (optionally) a port number
@@ -115,32 +97,22 @@ namespace YeelightAPI
             Hostname = hostname;
             Port = port;
 
-            //autoconnect device if specified
+            //auto connect device if specified
             if (autoConnect)
             {
                 Connect().Wait();
             }
         }
 
-        internal Device(string hostname, int port, string id, MODEL model, string firmwareVersion, Dictionary<string, object> properties, List<METHODS> supportedOperations)
+        internal Device(string hostname, int port, string id, Model model, Dictionary<string, object> properties, List<Methods> supportedOperations)
         {
             Hostname = hostname;
             Port = port;
             Id = id;
             Model = model;
-            FirmwareVersion = firmwareVersion;
             Properties = properties;
             SupportedOperations = supportedOperations;
         }
-
-        #endregion CONSTRUCTOR
-
-        #region PROPERTIES ACCESS
-
-        /// <summary>
-        /// Firmware version
-        /// </summary>
-        public readonly string FirmwareVersion = null;
 
         /// <summary>
         /// List of device properties
@@ -150,21 +122,15 @@ namespace YeelightAPI
         /// <summary>
         /// List of supported operations
         /// </summary>
-        public readonly List<METHODS> SupportedOperations = new List<METHODS>();
+        public readonly List<Methods> SupportedOperations = new List<Methods>();
 
         /// <summary>
         /// Name of the device
         /// </summary>
         public string Name
         {
-            get
-            {
-                return this[PROPERTIES.name] as string;
-            }
-            set
-            {
-                this[PROPERTIES.name] = value;
-            }
+            get => this[Models.Properties.Name] as string;
+            set => this[Models.Properties.Name] = value;
         }
 
         /// <summary>
@@ -172,16 +138,10 @@ namespace YeelightAPI
         /// </summary>
         /// <param name="property"></param>
         /// <returns></returns>
-        public object this[PROPERTIES property]
+        public object this[Properties property]
         {
-            get
-            {
-                return this[property.ToString()];
-            }
-            set
-            {
-                this[property.ToString()] = value;
-            }
+            get => this[property.ToString()];
+            set => this[property.ToString()] = value;
         }
 
         /// <summary>
@@ -191,14 +151,7 @@ namespace YeelightAPI
         /// <returns></returns>
         public object this[string propertyName]
         {
-            get
-            {
-                if (Properties.ContainsKey(propertyName))
-                {
-                    return Properties[propertyName];
-                }
-                return null;
-            }
+            get => Properties.ContainsKey(propertyName) ? Properties[propertyName] : null;
             set
             {
                 if (Properties.ContainsKey(propertyName))
@@ -211,13 +164,7 @@ namespace YeelightAPI
                 }
             }
         }
-
-        #endregion PROPERTIES ACCESS
-
-        #region PUBLIC METHODS
-
-        #region IDisposable
-
+        
         /// <summary>
         /// Dispose the device
         /// </summary>
@@ -229,14 +176,12 @@ namespace YeelightAPI
             }
         }
 
-        #endregion IDisposable
-
         /// <summary>
         /// Execute a command
         /// </summary>
         /// <param name="method"></param>
         /// <param name="parameters"></param>
-        public void ExecuteCommand(METHODS method, List<object> parameters = null)
+        public void ExecuteCommand(Methods method, List<object> parameters = null)
         {
             ExecuteCommand(method, GetUniqueIdForCommand(), parameters);
         }
@@ -249,7 +194,7 @@ namespace YeelightAPI
         /// <param name="method"></param>
         /// <param name="parameters"></param>
         /// <returns></returns>
-        public async Task<CommandResult<T>> ExecuteCommandWithResponse<T>(METHODS method, List<object> parameters = null)
+        public async Task<CommandResult<T>> ExecuteCommandWithResponse<T>(Methods method, List<object> parameters = null)
         {
             return await ExecuteCommandWithResponse<T>(method, GetUniqueIdForCommand(), parameters);
         }
@@ -261,12 +206,8 @@ namespace YeelightAPI
         /// <returns></returns>
         public override string ToString()
         {
-            return $"{this.Model.ToString()} ({this.Hostname}:{this.Port})";
+            return $"{Model.ToString()} ({Hostname}:{Port})";
         }
-
-        #endregion PUBLIC METHODS
-
-        #region INTERNAL METHODS
 
         /// <summary>
         /// Execute a command
@@ -274,22 +215,22 @@ namespace YeelightAPI
         /// <param name="method"></param>
         /// <param name="id"></param>
         /// <param name="parameters"></param>
-        internal void ExecuteCommand(METHODS method, int id, List<object> parameters = null)
+        internal void ExecuteCommand(Methods method, int id, List<object> parameters = null)
         {
             if (!IsMethodSupported(method))
             {
                 throw new InvalidOperationException($"The operation {method.GetRealName()} is not allowed by the device");
             }
 
-            Command command = new Command()
+            var command = new Command()
             {
                 Id = id,
                 Method = method.GetRealName(),
                 Params = parameters ?? new List<object>()
             };
 
-            string data = JsonConvert.SerializeObject(command, Constants.DeviceSerializerSettings);
-            byte[] sentData = Encoding.ASCII.GetBytes(data + Constants.LineSeparator); // \r\n is the end of the message, it needs to be sent for the message to be read by the device
+            var data = JsonConvert.SerializeObject(command, Constants.DeviceSerializerSettings);
+            var sentData = Encoding.ASCII.GetBytes(data + Constants.LineSeparator); // \r\n is the end of the message, it needs to be sent for the message to be read by the device
 
             lock (_syncLock)
             {
@@ -305,7 +246,7 @@ namespace YeelightAPI
         /// <param name="id"></param>
         /// <param name="parameters"></param>
         /// <returns></returns>
-        internal async Task<CommandResult<T>> ExecuteCommandWithResponse<T>(METHODS method, int id, List<object> parameters = null)
+        internal async Task<CommandResult<T>> ExecuteCommandWithResponse<T>(Methods method, int id, List<object> parameters = null)
         {
             try
             {
@@ -315,11 +256,7 @@ namespace YeelightAPI
 
             return null;
         }
-
-        #endregion INTERNAL METHODS
-
-        #region PRIVATE METHODS
-
+        
         /// <summary>
         /// Generate valid parameters for percent values
         /// </summary>
@@ -332,14 +269,7 @@ namespace YeelightAPI
                 throw new ArgumentNullException(nameof(parameters));
             }
 
-            if (percent < 0)
-            {
-                parameters.Add(Math.Max(percent, -100));
-            }
-            else
-            {
-                parameters.Add(Math.Min(percent, 100));
-            }
+            parameters.Add(percent < 0 ? Math.Max(percent, -100) : Math.Min(percent, 100));
         }
 
         /// <summary>
@@ -371,11 +301,11 @@ namespace YeelightAPI
         /// </summary>
         /// <param name="method"></param>
         /// <returns></returns>
-        private bool IsMethodSupported(METHODS method)
+        private bool IsMethodSupported(Methods method)
         {
             if (SupportedOperations?.Count != 0)
             {
-                return SupportedOperations.Contains(method);
+                return SupportedOperations != null && SupportedOperations.Contains(method);
             }
 
             return true;
@@ -383,19 +313,19 @@ namespace YeelightAPI
         }
 
         /// <summary>
-        /// Execute a command and waits for a response (Unsafe because of Task Cancelation)
+        /// Execute a command and waits for a response (Unsafe because of Task Cancellation)
         /// </summary>
         /// <param name="method"></param>
         /// <param name="id"></param>
         /// <param name="parameters"></param>
         /// <exception cref="TaskCanceledException"></exception>
         /// <returns></returns>
-        private async Task<CommandResult<T>> UnsafeExecuteCommandWithResponse<T>(METHODS method, int id = 0, List<object> parameters = null)
+        private async Task<CommandResult<T>> UnsafeExecuteCommandWithResponse<T>(Methods method, int id = 0, List<object> parameters = null)
         {
             CommandResultHandler<T> commandResultHandler;
             lock (_currentCommandResults)
             {
-                if (_currentCommandResults.TryGetValue(id, out ICommandResultHandler oldHandler))
+                if (_currentCommandResults.TryGetValue(id, out var oldHandler))
                 {
                     oldHandler.TrySetCanceled();
                     _currentCommandResults.Remove(id);
@@ -415,7 +345,7 @@ namespace YeelightAPI
                 lock (_currentCommandResults)
                 {
                     // remove the command if its the current handler in the dictionary
-                    if (_currentCommandResults.TryGetValue(id, out ICommandResultHandler currentHandler))
+                    if (_currentCommandResults.TryGetValue(id, out var currentHandler))
                     {
                         if (commandResultHandler == currentHandler)
                             _currentCommandResults.Remove(id);
@@ -447,24 +377,24 @@ namespace YeelightAPI
 
                             if (_tcpClient.IsConnected())
                             {
-                                //there is data avaiblable in the pipe
+                                //there is data available in the pipe
                                 if (_tcpClient.Client.Available > 0)
                                 {
-                                    byte[] bytes = new byte[_tcpClient.Client.Available];
+                                    var bytes = new byte[_tcpClient.Client.Available];
 
-                                    //read datas
+                                    //read data
                                     _tcpClient.Client.Receive(bytes);
 
                                     try
                                     {
-                                        string datas = Encoding.UTF8.GetString(bytes);
-                                        if (!string.IsNullOrEmpty(datas))
+                                        var data = Encoding.UTF8.GetString(bytes);
+                                        if (!string.IsNullOrEmpty(data))
                                         {
                                             //get every messages in the pipe
-                                            foreach (string entry in datas.Split(new string[] { Constants.LineSeparator },
+                                            foreach (var entry in data.Split(new[] { Constants.LineSeparator },
                                                 StringSplitOptions.RemoveEmptyEntries))
                                             {
-                                                CommandResult commandResult =
+                                                var commandResult =
                                                     JsonConvert.DeserializeObject<CommandResult>(entry, Constants.DeviceSerializerSettings);
                                                 if (commandResult != null && commandResult.Id != 0)
                                                 {
@@ -487,26 +417,24 @@ namespace YeelightAPI
                                                 }
                                                 else
                                                 {
-                                                    NotificationResult notificationResult =
+                                                    var notificationResult =
                                                         JsonConvert.DeserializeObject<NotificationResult>(entry,
                                                             Constants.DeviceSerializerSettings);
 
-                                                    if (notificationResult != null && notificationResult.Method != null)
+                                                    if (notificationResult?.Method == null) continue;
+                                                    if (notificationResult.Params != null)
                                                     {
-                                                        if (notificationResult.Params != null)
+                                                        //save properties
+                                                        foreach (var (key, value) in
+                                                            notificationResult.Params)
                                                         {
-                                                            //save properties
-                                                            foreach (KeyValuePair<PROPERTIES, object> property in
-                                                                notificationResult.Params)
-                                                            {
-                                                                this[property.Key] = property.Value;
-                                                            }
+                                                            this[key] = value;
                                                         }
-
-                                                        //notification result
-                                                        OnNotificationReceived?.Invoke(this,
-                                                            new NotificationReceivedEventArgs(notificationResult));
                                                     }
+
+                                                    //notification result
+                                                    OnNotificationReceived?.Invoke(this,
+                                                        new NotificationReceivedEventArgs(notificationResult));
                                                 }
                                             }
                                         }
@@ -533,7 +461,5 @@ namespace YeelightAPI
         {
             return Interlocked.Increment(ref _uniqueId);
         }
-
-        #endregion PRIVATE METHODS
     }
 }

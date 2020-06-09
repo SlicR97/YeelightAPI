@@ -8,16 +8,10 @@ namespace YeelightAPI.Core
     /// </summary>
     internal interface ICommandResultHandler
     {
-        #region Public Properties
-
         /// <summary>
         /// Type of the result
         /// </summary>
         Type ResultType { get; }
-
-        #endregion Public Properties
-
-        #region Public Methods
 
         /// <summary>
         /// Sets the error
@@ -35,7 +29,5 @@ namespace YeelightAPI.Core
         /// Try to cancel
         /// </summary>
         void TrySetCanceled();
-
-        #endregion Public Methods
     }
 }

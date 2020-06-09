@@ -7,8 +7,6 @@ namespace YeelightAPI.Models.ColorFlow
     /// </summary>
     public class ColorFlowSleepExpression : ColorFlowExpression
     {
-        #region Public Constructors
-
         /// <summary>
         /// Constructor
         /// </summary>
@@ -20,7 +18,5 @@ namespace YeelightAPI.Models.ColorFlow
             Value = 0;
             Brightness = 0;
         }
-
-        #endregion Public Constructors
     }
 }

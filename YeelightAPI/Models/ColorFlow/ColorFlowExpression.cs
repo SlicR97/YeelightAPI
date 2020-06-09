@@ -7,8 +7,6 @@ namespace YeelightAPI.Models.ColorFlow
     /// </summary>
     public class ColorFlowExpression
     {
-        #region Public Properties
-
         /// <summary>
         /// Brightness (-1 or 1~100)
         /// </summary>
@@ -29,15 +27,11 @@ namespace YeelightAPI.Models.ColorFlow
         /// </summary>
         public int Value { get; set; }
 
-        #endregion Public Properties
-
-        #region Public Methods
-
         /// <summary>
         /// returns the flow expression
         /// </summary>
         /// <returns></returns>
-        public List<int> GetFlow()
+        public IEnumerable<int> GetFlow()
         {
             return new List<int>(4)
             {
@@ -47,7 +41,5 @@ namespace YeelightAPI.Models.ColorFlow
                 Brightness
             };
         }
-
-        #endregion Public Methods
     }
 }

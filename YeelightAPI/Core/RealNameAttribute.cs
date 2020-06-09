@@ -7,19 +7,11 @@ namespace YeelightAPI.Core
     /// </summary>
     internal class RealNameAttribute : Attribute
     {
-        #region Public Properties
-
         public string PropertyName { get; set; }
-
-        #endregion Public Properties
-
-        #region Public Constructors
 
         public RealNameAttribute(string name)
         {
             PropertyName = name;
         }
-
-        #endregion Public Constructors
     }
 }

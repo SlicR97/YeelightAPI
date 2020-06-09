@@ -10,23 +10,19 @@ namespace YeelightAPI.Core
     /// </summary>
     internal static class PropertiesExtensions
     {
-        #region Public Methods
-
         /// <summary>
         /// Get the real name of the properties
         /// </summary>
         /// <param name="properties"></param>
         /// <returns></returns>
-        public static List<object> GetRealNames(this PROPERTIES properties)
+        public static List<object> GetRealNames(this Properties properties)
         {
-            Array vals = Enum.GetValues(typeof(PROPERTIES));
-            return vals
-                .Cast<PROPERTIES>()
-                .Where(m => properties.HasFlag(m) && m != PROPERTIES.ALL && m != PROPERTIES.NONE)
+            var values = Enum.GetValues(typeof(Properties));
+            return values
+                .Cast<Properties>()
+                .Where(m => properties.HasFlag(m) && m != Properties.All && m != Properties.None)
                 .Select(x => x.ToString())
                 .ToList<object>();
         }
-
-        #endregion Public Methods
     }
 }

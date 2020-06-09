@@ -11,8 +11,6 @@ namespace YeelightAPI.Core
     /// <typeparam name="T"></typeparam>
     internal class CommandResultHandler<T> : ICommandResultHandler
     {
-        #region Private Fields
-
         /// <summary>
         /// Cancellation Token Source
         /// </summary>
@@ -22,10 +20,6 @@ namespace YeelightAPI.Core
         /// Task Completion Source
         /// </summary>
         private readonly TaskCompletionSource<CommandResult<T>> _tcs = new TaskCompletionSource<CommandResult<T>>();
-
-        #endregion Private Fields
-
-        #region Public Properties
 
         /// <summary>
         /// Type of the result
@@ -37,25 +31,14 @@ namespace YeelightAPI.Core
         /// </summary>
         public Task<CommandResult<T>> Task => _tcs.Task;
 
-        #endregion Public Properties
-
-        #region Internal Constructors
-
         /// <summary>
         /// Constructor
         /// </summary>
         internal CommandResultHandler()
         {
             //automatic cancel after 5 seconds
-            _cts.Token.Register(() =>
-            {
-                TrySetCanceled();
-            });
+            _cts.Token.Register(TrySetCanceled);
         }
-
-        #endregion Internal Constructors
-
-        #region Public Methods
 
         /// <summary>
         /// Sets the error
@@ -85,7 +68,5 @@ namespace YeelightAPI.Core
             _tcs.TrySetCanceled();
             _cts?.Dispose();
         }
-
-        #endregion Public Methods
     }
 }

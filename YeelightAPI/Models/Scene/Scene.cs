@@ -9,21 +9,15 @@ namespace YeelightAPI.Models.Scene
     /// </summary>
     public class Scene : List<object>
     {
-        #region Public Constructors
-
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="parameters"></param>
-        public Scene(List<object> parameters)
+        public Scene(IEnumerable<object> parameters)
         {
-            this.AddRange(parameters);
+            AddRange(parameters);
         }
-
-        #endregion Public Constructors
-
-        #region Public Methods
-
+        
         /// <summary>
         /// Get a Scene from an auto delay off timing
         /// </summary>
@@ -32,9 +26,9 @@ namespace YeelightAPI.Models.Scene
         /// <returns></returns>
         public static Scene FromAutoDelayOff(int delay, int brightness)
         {
-            List<object> parameters = new List<object>()
+            var parameters = new List<object>()
             {
-                SceneClass.auto_delay_off.ToString(),
+                SceneClass.AutoDelayOff.ToString(),
                 brightness,
                 delay
             };
@@ -54,9 +48,9 @@ namespace YeelightAPI.Models.Scene
                 throw new ArgumentNullException(nameof(flow));
             }
 
-            List<object> parameters = new List<object>()
+            var parameters = new List<object>()
             {
-                SceneClass.cf.ToString(),
+                SceneClass.Cf.ToString(),
                 flow.RepetitionCount,
                 (int)flow.EndAction,
                 flow.GetColorFlowExpression()
@@ -73,9 +67,9 @@ namespace YeelightAPI.Models.Scene
         /// <returns></returns>
         public static Scene FromColorTemperature(int temperature, int brightness)
         {
-            List<object> parameters = new List<object>()
+            var parameters = new List<object>()
             {
-                SceneClass.ct.ToString(),
+                SceneClass.Ct.ToString(),
                 temperature,
                 brightness
             };
@@ -90,11 +84,11 @@ namespace YeelightAPI.Models.Scene
         /// <param name="sat"></param>
         /// <param name="brightness"></param>
         /// <returns></returns>
-        public static Scene FromHSVColor(int hue, int sat, int brightness)
+        public static Scene FromHsvColor(int hue, int sat, int brightness)
         {
-            List<object> parameters = new List<object>()
+            var parameters = new List<object>()
             {
-                SceneClass.hsv.ToString(),
+                SceneClass.Hsv.ToString(),
                 hue,
                 sat,
                 brightness
@@ -111,18 +105,16 @@ namespace YeelightAPI.Models.Scene
         /// <param name="b"></param>
         /// <param name="brightness"></param>
         /// <returns></returns>
-        public static Scene FromRGBColor(int r, int g, int b, int brightness)
+        public static Scene FromRgbColor(int r, int g, int b, int brightness)
         {
-            List<object> parameters = new List<object>()
+            var parameters = new List<object>()
             {
-                SceneClass.color.ToString(),
-                ColorHelper.ComputeRGBColor(r, g, b),
+                SceneClass.Color.ToString(),
+                ColorHelper.ComputeRgbColor(r, g, b),
                 brightness
             };
 
             return new Scene(parameters);
         }
-
-        #endregion Public Methods
     }
 }

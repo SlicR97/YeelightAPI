@@ -12,37 +12,23 @@ namespace YeelightAPI.Models
     /// </summary>
     public class FluentFlow
     {
-        #region Private Fields
+        private readonly List<ColorFlowExpression> _expressions = new List<ColorFlowExpression>();
 
-        private IDeviceController _device = null;
+        private readonly Func<ColorFlow.ColorFlow, Task<bool>> _startColorFlowMethod;
 
-        private List<ColorFlowExpression> _expressions = new List<ColorFlowExpression>();
-
-        private Func<ColorFlow.ColorFlow, Task<bool>> _startColorFlowMethod = null;
-
-        private Func<Task<bool>> _stopColorFlowMethod = null;
-
-        #endregion Private Fields
-
-        #region Internal Constructors
+        private readonly Func<Task<bool>> _stopColorFlowMethod;
 
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="device"></param>
         /// <param name="start"></param>
         /// <param name="stop"></param>
-        internal FluentFlow(IDeviceController device, Func<ColorFlow.ColorFlow, Task<bool>> start, Func<Task<bool>> stop)
+        internal FluentFlow(Func<ColorFlow.ColorFlow, Task<bool>> start, Func<Task<bool>> stop)
         {
-            this._device = device;
-            this._startColorFlowMethod = start;
-            this._stopColorFlowMethod = stop;
+            _startColorFlowMethod = start;
+            _stopColorFlowMethod = stop;
         }
-
-        #endregion Internal Constructors
-
-        #region Public Methods
-
+        
         /// <summary>
         /// Set the duration of the previous action
         /// </summary>
@@ -67,7 +53,7 @@ namespace YeelightAPI.Models
         {
             CheckExpressions();
 
-            ColorFlow.ColorFlow flow = new ColorFlow.ColorFlow(repetition, endAction, _expressions);
+            var flow = new ColorFlow.ColorFlow(repetition, endAction, _expressions);
 
             await _startColorFlowMethod(flow);
 
@@ -112,7 +98,7 @@ namespace YeelightAPI.Models
         /// <returns></returns>
         public FluentFlow RgbColor(int r, int g, int b, int brightness, int duration = Constants.MinimumFlowExpressionDuration)
         {
-            _expressions.Add(new ColorFlowRGBExpression(r, g, b, brightness, duration));
+            _expressions.Add(new ColorFlowRgbExpression(r, g, b, brightness, duration));
 
             return this;
         }
@@ -133,22 +119,20 @@ namespace YeelightAPI.Models
         /// Stop the color flow
         /// </summary>
         /// <returns></returns>
-        public async Task<FluentFlow> Stop()
+        public async Task Stop()
         {
             await _stopColorFlowMethod();
-
-            return this;
         }
 
         /// <summary>
         /// Stop the color flow
         /// </summary>
         /// <returns></returns>
-        public async Task<FluentFlow> StopAfter(int milliSecondsDelay)
+        public async Task StopAfter(int milliSecondsDelay)
         {
             await Task.Delay(milliSecondsDelay);
 
-            return await Stop();
+            await Stop();
         }
 
         /// <summary>
@@ -165,10 +149,6 @@ namespace YeelightAPI.Models
             return this;
         }
 
-        #endregion Public Methods
-
-        #region Private Methods
-
         /// <summary>
         /// Throw an exception if the expressions list is empty
         /// </summary>
@@ -179,7 +159,5 @@ namespace YeelightAPI.Models
                 throw new InvalidOperationException("The flow must contains at least one expression");
             }
         }
-
-        #endregion Private Methods
     }
 }

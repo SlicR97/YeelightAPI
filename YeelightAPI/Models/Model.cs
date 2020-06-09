@@ -5,7 +5,7 @@ namespace YeelightAPI.Models
     /// <summary>
     /// Available product models.
     /// </summary>
-    public enum MODEL
+    public enum Model
     {
         /// <summary>
         /// Unknown model.

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace YeelightAPI
@@ -9,16 +10,10 @@ namespace YeelightAPI
     /// </summary>
     public partial class DeviceGroup : List<Device>, IDisposable
     {
-        #region PUBLIC PROPERTIES
-
         /// <summary>
         /// Name of the group
         /// </summary>
         public string Name { get; set; }
-
-        #endregion PUBLIC PROPERTIES
-
-        #region CONSTRUCTOR
 
         /// <summary>
         /// Constructor with one device
@@ -59,51 +54,29 @@ namespace YeelightAPI
             AddRange(devices);
             Name = name;
         }
-
-        #endregion CONSTRUCTOR
-
-        #region IDisposable
-
+        
         /// <summary>
         /// Dispose the devices
         /// </summary>
         public void Dispose()
         {
-            foreach (Device device in this)
+            foreach (var device in this)
             {
                 device.Dispose();
             }
         }
-
-        #endregion IDisposable
-
-        #region Protected Methods
-
+        
         /// <summary>
         /// Execute code for all the devices
         /// </summary>
-        /// <param name="f"></param>
+        /// <param name="function"></param>
         /// <returns></returns>
-        protected async Task<bool> Process(Func<Device, Task<bool>> f)
+        protected async Task<bool> Process(Func<Device, Task<bool>> function)
         {
-            bool result = true;
-            List<Task<bool>> tasks = new List<Task<bool>>();
-
-            foreach (Device device in this)
-            {
-                tasks.Add(f(device));
-            }
+            var tasks = this.Select(function).ToList();
 
             await Task.WhenAll(tasks);
-
-            foreach (Task<bool> t in tasks)
-            {
-                result &= t.Result;
-            }
-
-            return result;
+            return tasks.All(x => x.Result);
         }
-
-        #endregion Protected Methods
     }
 }

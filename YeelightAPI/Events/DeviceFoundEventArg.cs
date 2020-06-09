@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace YeelightAPI.Events
 {
@@ -9,16 +7,10 @@ namespace YeelightAPI.Events
     /// </summary>
     public class DeviceFoundEventArgs : EventArgs
     {
-        #region Public Properties
-
         /// <summary>
         /// Notification Result
         /// </summary>
         public Device Device { get; set; }
-
-        #endregion Public Properties
-
-        #region Public Constructors
 
         /// <summary>
         /// Constructor
@@ -33,7 +25,5 @@ namespace YeelightAPI.Events
         {
             Device = device;
         }
-
-        #endregion Public Constructors
     }
 }

@@ -8,26 +8,26 @@
         /// <summary>
         /// RGB Color
         /// </summary>
-        color,
+        Color,
 
         /// <summary>
         /// HSV Color
         /// </summary>
-        hsv,
+        Hsv,
 
         /// <summary>
         /// Color temperature
         /// </summary>
-        ct,
+        Ct,
 
         /// <summary>
         /// Color Flow
         /// </summary>
-        cf,
+        Cf,
 
         /// <summary>
         /// automatic delay off
         /// </summary>
-        auto_delay_off
+        AutoDelayOff
     }
 }

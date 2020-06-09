@@ -8,16 +8,16 @@
         /// <summary>
         /// Brightness
         /// </summary>
-        bright = 0,
+        Bright = 0,
 
         /// <summary>
         /// Color temperature
         /// </summary>
-        ct = 1,
+        Ct = 1,
 
         /// <summary>
         /// Color
         /// </summary>
-        color = 2
+        Color = 2
     }
 }

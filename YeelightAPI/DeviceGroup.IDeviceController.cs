@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using YeelightAPI.Interfaces;
 using YeelightAPI.Models;
 using YeelightAPI.Models.Adjust;
 using YeelightAPI.Models.ColorFlow;
@@ -12,8 +13,6 @@ namespace YeelightAPI
     /// </summary>
     public partial class DeviceGroup : IDeviceController
     {
-        #region Public Methods
-
         /// <summary>
         /// Adjusts the brightness
         /// </summary>
@@ -21,12 +20,7 @@ namespace YeelightAPI
         /// <param name="smooth"></param>
         /// <returns></returns>
         public async Task<bool> AdjustBright(int percent, int? smooth = null)
-        {
-            return await Process((Device device) =>
-            {
-                return device.AdjustBright(percent, smooth);
-            });
-        }
+            => await Process(device => device.AdjustBright(percent, smooth));
 
         /// <summary>
         /// Adjusts the color
@@ -35,12 +29,7 @@ namespace YeelightAPI
         /// <param name="smooth"></param>
         /// <returns></returns>
         public async Task<bool> AdjustColor(int percent, int? smooth = null)
-        {
-            return await Process((Device device) =>
-            {
-                return device.AdjustColor(percent, smooth);
-            });
-        }
+            => await Process(device => device.AdjustColor(percent, smooth));
 
         /// <summary>
         /// Adjusts the color temperature
@@ -49,24 +38,14 @@ namespace YeelightAPI
         /// <param name="smooth"></param>
         /// <returns></returns>
         public async Task<bool> AdjustColorTemperature(int percent, int? smooth = null)
-        {
-            return await Process((Device device) =>
-            {
-                return device.AdjustColorTemperature(percent, smooth);
-            });
-        }
+            => await Process(device => device.AdjustColorTemperature(percent, smooth));
 
         /// <summary>
         /// Connect all the devices
         /// </summary>
         /// <returns></returns>
         public async Task<bool> Connect()
-        {
-            return await Process((Device device) =>
-            {
-                return device.Connect();
-            });
-        }
+            => await Process(device => device.Connect());
 
         /// <summary>
         /// Add a cron task for all devices
@@ -75,12 +54,7 @@ namespace YeelightAPI
         /// <param name="type"></param>
         /// <returns></returns>
         public async Task<bool> CronAdd(int value, CronType type = CronType.PowerOff)
-        {
-            return await Process((Device device) =>
-            {
-                return device.CronAdd(value, type);
-            });
-        }
+            => await Process(device => device.CronAdd(value, type));
 
         /// <summary>
         /// Delete a cron task for all devices
@@ -88,19 +62,14 @@ namespace YeelightAPI
         /// <param name="type"></param>
         /// <returns></returns>
         public async Task<bool> CronDelete(CronType type = CronType.PowerOff)
-        {
-            return await Process((Device device) =>
-            {
-                return device.CronDelete(type);
-            });
-        }
+            => await Process(device => device.CronDelete(type));
 
         /// <summary>
         /// Disconnect all the devices
         /// </summary>
         public void Disconnect()
         {
-            foreach (Device device in this)
+            foreach (var device in this)
             {
                 device.Disconnect();
             }
@@ -112,7 +81,7 @@ namespace YeelightAPI
         /// <returns></returns>
         public FluentFlow Flow()
         {
-            return new FluentFlow(this, StartColorFlow, StopColorFlow);
+            return new FluentFlow(StartColorFlow, StopColorFlow);
         }
 
         /// <summary>
@@ -122,12 +91,7 @@ namespace YeelightAPI
         /// <param name="property"></param>
         /// <returns></returns>
         public async Task<bool> SetAdjust(AdjustAction action, AdjustProperty property)
-        {
-            return await Process((Device device) =>
-            {
-                return device.SetAdjust(action, property);
-            });
-        }
+            => await Process(device => device.SetAdjust(action, property));
 
         /// <summary>
         /// Set the brightness for all the devices
@@ -136,12 +100,7 @@ namespace YeelightAPI
         /// <param name="smooth"></param>
         /// <returns></returns>
         public async Task<bool> SetBrightness(int value, int? smooth = null)
-        {
-            return await Process((Device device) =>
-            {
-                return device.SetBrightness(value, smooth);
-            });
-        }
+            => await Process(device => device.SetBrightness(value, smooth));
 
         /// <summary>
         /// Set the color temperature for all the devices
@@ -150,24 +109,14 @@ namespace YeelightAPI
         /// <param name="smooth"></param>
         /// <returns></returns>
         public async Task<bool> SetColorTemperature(int temperature, int? smooth = null)
-        {
-            return await Process((Device device) =>
-            {
-                return device.SetColorTemperature(temperature, smooth);
-            });
-        }
+            => await Process(device => device.SetColorTemperature(temperature, smooth));
 
         /// <summary>
         /// Set the current state as the default one
         /// </summary>
         /// <returns></returns>
         public async Task<bool> SetDefault()
-        {
-            return await Process((Device device) =>
-            {
-                return device.SetDefault();
-            });
-        }
+            => await Process(device => device.SetDefault());
 
         /// <summary>
         /// Change HSV color asynchronously for all devices
@@ -176,13 +125,8 @@ namespace YeelightAPI
         /// <param name="sat"></param>
         /// <param name="smooth"></param>
         /// <returns></returns>
-        public async Task<bool> SetHSVColor(int hue, int sat, int? smooth = null)
-        {
-            return await Process((Device device) =>
-            {
-                return device.SetHSVColor(hue, sat, smooth);
-            });
-        }
+        public async Task<bool> SetHsvColor(int hue, int sat, int? smooth = null)
+            => await Process(device => device.SetHsvColor(hue, sat, smooth));
 
         /// <summary>
         /// Set the power for all the devices
@@ -192,12 +136,7 @@ namespace YeelightAPI
         /// <param name="mode"></param>
         /// <returns></returns>
         public async Task<bool> SetPower(bool state = true, int? smooth = null, PowerOnMode mode = PowerOnMode.Normal)
-        {
-            return await Process((Device device) =>
-            {
-                return device.SetPower(state, smooth, mode);
-            });
-        }
+            => await Process(device => device.SetPower(state, smooth, mode));
 
         /// <summary>
         /// Set the RGB Color for all the devices
@@ -207,13 +146,8 @@ namespace YeelightAPI
         /// <param name="b"></param>
         /// <param name="smooth"></param>
         /// <returns></returns>
-        public async Task<bool> SetRGBColor(int r, int g, int b, int? smooth = null)
-        {
-            return await Process((Device device) =>
-            {
-                return device.SetRGBColor(r, g, b, smooth);
-            });
-        }
+        public async Task<bool> SetRgbColor(int r, int g, int b, int? smooth = null)
+            => await Process(device => device.SetRgbColor(r, g, b, smooth));
 
         /// <summary>
         ///
@@ -221,12 +155,7 @@ namespace YeelightAPI
         /// <param name="scene"></param>
         /// <returns></returns>
         public async Task<bool> SetScene(Scene scene)
-        {
-            return await Process((Device device) =>
-            {
-                return device.SetScene(scene);
-            });
-        }
+            => await Process(device => device.SetScene(scene));
 
         /// <summary>
         /// Starts a color flow for all devices
@@ -234,12 +163,7 @@ namespace YeelightAPI
         /// <param name="flow"></param>
         /// <returns></returns>
         public async Task<bool> StartColorFlow(ColorFlow flow)
-        {
-            return await Process((Device device) =>
-            {
-                return device.StartColorFlow(flow);
-            });
-        }
+            => await Process(device => device.StartColorFlow(flow));
 
         /// <summary>
         /// starts the music mode for all devices
@@ -248,48 +172,28 @@ namespace YeelightAPI
         /// <param name="port"></param>
         /// <returns></returns>
         public async Task<bool> StartMusicMode(string hostName, int port)
-        {
-            return await Process((Device device) =>
-            {
-                return device.StartMusicMode(hostName, port);
-            });
-        }
+            => await Process(device => device.StartMusicMode(hostName, port));
 
         /// <summary>
         /// stops the color flow of all devices
         /// </summary>
         /// <returns></returns>
         public async Task<bool> StopColorFlow()
-        {
-            return await Process((Device device) =>
-            {
-                return device.StopColorFlow();
-            });
-        }
+            => await Process(device => device.StopColorFlow());
 
         /// <summary>
         /// stops the music mode for all devices
         /// </summary>
         /// <returns></returns>
         public async Task<bool> StopMusicMode()
-        {
-            return await Process((Device device) =>
-            {
-                return device.StopMusicMode();
-            });
-        }
+            => await Process(device => device.StopMusicMode());
 
         /// <summary>
         /// Toggle the power for all the devices
         /// </summary>
         /// <returns></returns>
         public async Task<bool> Toggle()
-        {
-            return await Process((Device device) =>
-            {
-                return device.Toggle();
-            });
-        }
+            => await Process(device => device.Toggle());
 
         /// <summary>
         /// Turn-Off the device
@@ -297,12 +201,7 @@ namespace YeelightAPI
         /// <param name="smooth"></param>
         /// <returns></returns>
         public async Task<bool> TurnOff(int? smooth = null)
-        {
-            return await Process((Device device) =>
-            {
-                return device.TurnOff(smooth);
-            });
-        }
+            => await Process(device => device.TurnOff(smooth));
 
         /// <summary>
         /// Turn-On the device
@@ -311,13 +210,6 @@ namespace YeelightAPI
         /// <param name="mode"></param>
         /// <returns></returns>
         public async Task<bool> TurnOn(int? smooth = null, PowerOnMode mode = PowerOnMode.Normal)
-        {
-            return await Process((Device device) =>
-            {
-                return device.TurnOn(smooth, mode);
-            });
-        }
-
-        #endregion Public Methods
+            => await Process(device => device.TurnOn(smooth, mode));
     }
 }

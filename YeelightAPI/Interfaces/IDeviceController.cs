@@ -5,15 +5,13 @@ using YeelightAPI.Models.ColorFlow;
 using YeelightAPI.Models.Cron;
 using YeelightAPI.Models.Scene;
 
-namespace YeelightAPI
+namespace YeelightAPI.Interfaces
 {
     /// <summary>
     /// Descriptor for Devices operations
     /// </summary>
     public interface IDeviceController
     {
-        #region Public Methods
-
         /// <summary>
         /// Adjusts the brightness
         /// </summary>
@@ -107,7 +105,7 @@ namespace YeelightAPI
         /// <param name="sat"></param>
         /// <param name="smooth"></param>
         /// <returns></returns>
-        Task<bool> SetHSVColor(int hue, int sat, int? smooth = null);
+        Task<bool> SetHsvColor(int hue, int sat, int? smooth = null);
 
         /// <summary>
         /// Set Power
@@ -126,7 +124,7 @@ namespace YeelightAPI
         /// <param name="b"></param>
         /// <param name="smooth"></param>
         /// <returns></returns>
-        Task<bool> SetRGBColor(int r, int g, int b, int? smooth = null);
+        Task<bool> SetRgbColor(int r, int g, int b, int? smooth = null);
 
         /// <summary>
         /// Set a scene
@@ -182,7 +180,5 @@ namespace YeelightAPI
         /// <param name="mode"></param>
         /// <returns></returns>
         Task<bool> TurnOn(int? smooth = null, PowerOnMode mode = PowerOnMode.Normal);
-
-        #endregion Public Methods
     }
 }

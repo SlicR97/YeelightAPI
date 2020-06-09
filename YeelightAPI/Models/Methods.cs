@@ -3,9 +3,9 @@
 namespace YeelightAPI.Models
 {
     /// <summary>
-    /// Available Methodss
+    /// Available Methods
     /// </summary>
-    public enum METHODS
+    public enum Methods
     {
         /// <summary>
         /// Retrieve current property of smart LED
@@ -23,13 +23,13 @@ namespace YeelightAPI.Models
         /// Change the color of a smart LED
         /// </summary>
         [RealName("set_rgb")]
-        SetRGBColor = 3,
+        SetRgbColor = 3,
 
         /// <summary>
         /// Change the color of a smart LED
         /// </summary>
         [RealName("set_hsv")]
-        SetHSVColor = 4,
+        SetHsvColor = 4,
 
         /// <summary>
         /// Change the brightness of a smart LED
@@ -113,13 +113,13 @@ namespace YeelightAPI.Models
         /// Change the background color of a smart LED
         /// </summary>
         [RealName("bg_set_rgb")]
-        SetBackgroundLightRGBColor = 18,
+        SetBackgroundLightRgbColor = 18,
 
         /// <summary>
         /// Change the background color of a smart LED
         /// </summary>
         [RealName("bg_set_hsv")]
-        SetBackgroundLightHSVColor = 19,
+        SetBackgroundLightHsvColor = 19,
 
         /// <summary>
         /// Change the background color temperature of a smart LED

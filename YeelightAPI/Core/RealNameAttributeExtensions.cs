@@ -10,42 +10,33 @@ namespace YeelightAPI.Core
     /// </summary>
     internal static class RealNameAttributeExtension
     {
-        #region Private Fields
-
-        private static readonly ConcurrentDictionary<Enum, string> _realNames = new ConcurrentDictionary<Enum, string>();
-
-        #endregion Private Fields
-
-        #region Public Methods
+        private static readonly ConcurrentDictionary<Enum, string> RealNames = new ConcurrentDictionary<Enum, string>();
 
         /// <summary>
-        /// Retreive the RealNameAttribute of an enum value
+        /// Retrieve the RealNameAttribute of an enum value
         /// </summary>
         /// <param name="enumValue"></param>
         /// <returns></returns>
         public static string GetRealName(this Enum enumValue)
         {
-            if (_realNames.ContainsKey(enumValue))
+            if (RealNames.ContainsKey(enumValue))
             {
                 // get from the cache
-                return _realNames[enumValue];
+                return RealNames[enumValue];
             }
 
             //read the attribute
-            RealNameAttribute attribute;
-            MemberInfo memberInfo = enumValue.GetType().GetMember(enumValue.ToString()).FirstOrDefault();
+            var memberInfo = enumValue.GetType().GetMember(enumValue.ToString()).FirstOrDefault();
 
-            if (memberInfo != null)
-            {
-                attribute = (RealNameAttribute)memberInfo.GetCustomAttributes(typeof(RealNameAttribute), false).FirstOrDefault();
+            if (memberInfo == null) return null;
+            var attribute = (RealNameAttribute)memberInfo.GetCustomAttributes(typeof(RealNameAttribute), false).FirstOrDefault();
 
-                //adding to cache
-                _realNames.TryAdd(enumValue, attribute.PropertyName);
+            //adding to cache
+            if (attribute == null) return null;
+            RealNames.TryAdd(enumValue, attribute.PropertyName);
 
-                return attribute.PropertyName;
-            }
+            return attribute.PropertyName;
 
-            return null;
         }
 
         /// <summary>
@@ -61,20 +52,16 @@ namespace YeelightAPI.Core
             // a) it would require for each enum type a dictionary of realName to value
             // b) the method is only used by device locator and therefore seldom called.
 
-            foreach (FieldInfo fieldInfo in typeof(TEnum).GetFields())
+            foreach (var fieldInfo in typeof(TEnum).GetFields())
             {
-                RealNameAttribute attribute = fieldInfo.GetCustomAttribute<RealNameAttribute>();
-                if (attribute?.PropertyName == realName)
-                {
-                    result = (TEnum)fieldInfo.GetValue(null);
-                    return true;
-                }
+                var attribute = fieldInfo.GetCustomAttribute<RealNameAttribute>();
+                if (attribute?.PropertyName != realName) continue;
+                result = (TEnum)fieldInfo.GetValue(null);
+                return true;
             }
 
-            result = default(TEnum);
+            result = default;
             return false;
         }
-
-        #endregion Public Methods
     }
 }

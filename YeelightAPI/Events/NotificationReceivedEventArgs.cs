@@ -1,23 +1,17 @@
 ﻿using System;
 using YeelightAPI.Models;
 
-namespace YeelightAPI
+namespace YeelightAPI.Events
 {
     /// <summary>
     /// Notification event Argument
     /// </summary>
     public class NotificationReceivedEventArgs : EventArgs
     {
-        #region Public Properties
-
         /// <summary>
         /// Notification Result
         /// </summary>
         public NotificationResult Result { get; set; }
-
-        #endregion Public Properties
-
-        #region Public Constructors
 
         /// <summary>
         /// Constructor
@@ -32,7 +26,5 @@ namespace YeelightAPI
         {
             Result = result;
         }
-
-        #endregion Public Constructors
     }
 }

@@ -9,8 +9,6 @@ namespace YeelightAPI.Models
     /// </summary>
     public class NotificationResult
     {
-        #region Public Properties
-
         /// <summary>
         /// Method
         /// </summary>
@@ -20,8 +18,6 @@ namespace YeelightAPI.Models
         /// Parameters
         /// </summary>
         [JsonConverter(typeof(PropertiesDictionaryConverter))]
-        public Dictionary<PROPERTIES, object> Params { get; set; }
-
-        #endregion Public Properties
+        public Dictionary<Properties, object> Params { get; set; }
     }
 }

@@ -18,12 +18,12 @@
         /// <summary>
         /// RGB color
         /// </summary>
-        RGB = 2,
+        Rgb = 2,
 
         /// <summary>
         /// HSV color
         /// </summary>
-        HSV = 3,
+        Hsv = 3,
 
         /// <summary>
         /// Color Flow

@@ -19,16 +19,12 @@ namespace YeelightAPI
     /// </summary>
     public static class DeviceLocator
     {
-        #region Private Fields
-
-        private const string _ssdpMessage = "M-SEARCH * HTTP/1.1\r\nHOST: 239.255.255.250:1982\r\nMAN: \"ssdp:discover\"\r\nST: wifi_bulb";
-        private static readonly List<object> _allPropertyRealNames = PROPERTIES.ALL.GetRealNames();
-        private static readonly char[] _colon = new char[] { ':' };
-        private static readonly IPEndPoint _multicastEndPoint = new IPEndPoint(IPAddress.Parse("239.255.255.250"), 1982);
-        private static readonly byte[] _ssdpDiagram = Encoding.ASCII.GetBytes(_ssdpMessage);
-        private static string _yeelightlocationMatch = "Location: yeelight://";
-
-        #endregion Private Fields
+        private const string SsdpMessage = "M-SEARCH * HTTP/1.1\r\nHOST: 239.255.255.250:1982\r\nMAN: \"ssdp:discover\"\r\nST: wifi_bulb";
+        private static readonly List<object> AllPropertyRealNames = Properties.All.GetRealNames();
+        private static readonly char[] Colon = new char[] { ':' };
+        private static readonly IPEndPoint MulticastEndPoint = new IPEndPoint(IPAddress.Parse("239.255.255.250"), 1982);
+        private static readonly byte[] SsdpDiagram = Encoding.ASCII.GetBytes(SsdpMessage);
+        private const string YeelightLocationMatch = "Location: yeelight://";
 
         /// <summary>
         /// Notification Received event
@@ -42,24 +38,20 @@ namespace YeelightAPI
         /// <param name="e"></param>
         public delegate void DeviceFoundEventHandler(object sender, DeviceFoundEventArgs e);
 
-        #region Public Methods
-
         /// <summary>
         /// Discover devices in a specific Network Interface
         /// </summary>
-        /// <param name="preferedInterface"></param>
+        /// <param name="preferredInterface"></param>
         /// <returns></returns>
-        public static async Task<List<Device>> Discover(NetworkInterface preferedInterface)
+        public static async Task<List<Device>> Discover(NetworkInterface preferredInterface)
         {
-            List<Task<List<Device>>> tasks = CreateDiscoverTasks(preferedInterface);
-            List<Device> devices = new List<Device>();
+            var tasks = CreateDiscoverTasks(preferredInterface);
+            var devices = new List<Device>();
 
-            if (tasks.Count != 0)
-            {
-                await Task.WhenAll(tasks);
+            if (tasks.Count == 0) return devices;
+            await Task.WhenAll(tasks);
 
-                devices.AddRange(tasks.SelectMany(t => t.Result).GroupBy(d => d.Hostname).Select(g => g.First()));
-            }
+            devices.AddRange(tasks.SelectMany(t => t.Result).GroupBy(d => d.Hostname).Select(g => g.First()));
 
             return devices;
         }
@@ -70,27 +62,21 @@ namespace YeelightAPI
         /// <returns></returns>
         public static async Task<List<Device>> Discover()
         {
-            List<Task<List<Device>>> tasks = new List<Task<List<Device>>>();
-            List<Device> devices = new List<Device>();
+            var tasks = new List<Task<List<Device>>>();
+            var devices = new List<Device>();
 
-            foreach (NetworkInterface ni in NetworkInterface.GetAllNetworkInterfaces().Where(n => n.OperationalStatus == OperationalStatus.Up))
+            foreach (var ni in NetworkInterface.GetAllNetworkInterfaces().Where(n => n.OperationalStatus == OperationalStatus.Up))
             {
                 tasks.AddRange(CreateDiscoverTasks(ni));
             }
 
-            if (tasks.Count != 0)
-            {
-                await Task.WhenAll(tasks);
+            if (tasks.Count == 0) return devices;
+            await Task.WhenAll(tasks);
 
-                devices.AddRange(tasks.SelectMany(t => t.Result).GroupBy(d => d.Hostname).Select(g => g.First()));
-            }
+            devices.AddRange(tasks.SelectMany(t => t.Result).GroupBy(d => d.Hostname).Select(g => g.First()));
 
             return devices;
         }
-
-        #endregion Public Methods
-
-        #region Private Methods
 
         /// <summary>
         /// Create Discovery tasks for a specific Network Interface
@@ -100,158 +86,156 @@ namespace YeelightAPI
         private static List<Task<List<Device>>> CreateDiscoverTasks(NetworkInterface netInterface)
         {
             var devices = new ConcurrentDictionary<string, Device>();
-            List<Task<List<Device>>> tasks = new List<Task<List<Device>>>();
+            var tasks = new List<Task<List<Device>>>();
 
             try
             {
-                GatewayIPAddressInformation addr = netInterface.GetIPProperties().GatewayAddresses.FirstOrDefault();
+                var addr = netInterface.GetIPProperties().GatewayAddresses.FirstOrDefault();
 
                 if (addr != null && !addr.Address.ToString().Equals("0.0.0.0"))
                 {
                     if (netInterface.NetworkInterfaceType == NetworkInterfaceType.Wireless80211 || netInterface.NetworkInterfaceType == NetworkInterfaceType.Ethernet)
                     {
-                        foreach (UnicastIPAddressInformation ip in netInterface.GetIPProperties().UnicastAddresses)
+                        foreach (var ip in netInterface.GetIPProperties().UnicastAddresses)
                         {
-                            if (ip.Address.AddressFamily == AddressFamily.InterNetwork)
+                            if (ip.Address.AddressFamily != AddressFamily.InterNetwork) continue;
+                            for (var cpt = 0; cpt < 3; cpt++)
                             {
-                                for (int cpt = 0; cpt < 3; cpt++)
+                                var t = Task.Factory.StartNew(() =>
                                 {
-                                    Task<List<Device>> t = Task.Factory.StartNew<List<Device>>(() =>
+                                    var ssdpSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp)
                                     {
-                                        Socket ssdpSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp)
+                                        Blocking = false,
+                                        Ttl = 1,
+                                        UseOnlyOverlappedIO = true,
+                                        MulticastLoopback = false,
+                                    };
+                                    ssdpSocket.Bind(new IPEndPoint(ip.Address, 0));
+                                    ssdpSocket.SetSocketOption(
+                                        SocketOptionLevel.IP,
+                                        SocketOptionName.AddMembership,
+                                        new MulticastOption(MulticastEndPoint.Address));
+
+                                    ssdpSocket.SendTo(SsdpDiagram, SocketFlags.None, MulticastEndPoint);
+
+                                    var start = DateTime.Now;
+                                    while (DateTime.Now - start < TimeSpan.FromSeconds(1))
+                                    {
+                                        var available = ssdpSocket.Available;
+
+                                        if (available > 0)
                                         {
-                                            Blocking = false,
-                                            Ttl = 1,
-                                            UseOnlyOverlappedIO = true,
-                                            MulticastLoopback = false,
-                                        };
-                                        ssdpSocket.Bind(new IPEndPoint(ip.Address, 0));
-                                        ssdpSocket.SetSocketOption(
-                                            SocketOptionLevel.IP,
-                                            SocketOptionName.AddMembership,
-                                            new MulticastOption(_multicastEndPoint.Address));
+                                            var buffer = new byte[available];
+                                            var i = ssdpSocket.Receive(buffer, SocketFlags.None);
 
-                                        ssdpSocket.SendTo(_ssdpDiagram, SocketFlags.None, _multicastEndPoint);
-
-                                        DateTime start = DateTime.Now;
-                                        while (DateTime.Now - start < TimeSpan.FromSeconds(1))
-                                        {
-                                            int available = ssdpSocket.Available;
-
-                                            if (available > 0)
+                                            if (i > 0)
                                             {
-                                                byte[] buffer = new byte[available];
-                                                int i = ssdpSocket.Receive(buffer, SocketFlags.None);
+                                                var response = Encoding.UTF8.GetString(buffer.Take(i).ToArray());
+                                                var device = GetDeviceInformationFromSsdpMessage(response);
 
-                                                if (i > 0)
+                                                //add only if no device already matching
+                                                if(devices.TryAdd(device.Hostname, device))
                                                 {
-                                                    string response = Encoding.UTF8.GetString(buffer.Take(i).ToArray());
-                                                    Device device = GetDeviceInformationsFromSsdpMessage(response);
-
-                                                    //add only if no device already matching
-                                                    if(devices.TryAdd(device.Hostname, device))
-                                                    {
-                                                        OnDeviceFound?.Invoke(null, new DeviceFoundEventArgs(device));
-                                                    }
+                                                    OnDeviceFound?.Invoke(null, new DeviceFoundEventArgs(device));
                                                 }
                                             }
-                                            Thread.Sleep(10);
                                         }
+                                        Thread.Sleep(10);
+                                    }
 
-                                        return devices.Values.ToList();
-                                    });
-                                    tasks.Add(t);
-                                }
+                                    return devices.Values.ToList();
+                                });
+                                tasks.Add(t);
                             }
                         }
                     }
                 }
             }
-            catch { }
+            catch
+            {
+                // ignored
+            }
 
             return tasks;
         }
 
         /// <summary>
-        /// Gets the informations from a raw SSDP message (host, port)
+        /// Gets the information from a raw SSDP message (host, port)
         /// </summary>
         /// <param name="ssdpMessage"></param>
         /// <returns></returns>
-        private static Device GetDeviceInformationsFromSsdpMessage(string ssdpMessage)
+        private static Device GetDeviceInformationFromSsdpMessage(string ssdpMessage)
         {
-            if (ssdpMessage != null)
+            if (ssdpMessage == null) return null;
+            var split = ssdpMessage.Split(new[] { Constants.LineSeparator }, StringSplitOptions.RemoveEmptyEntries);
+            string host = null;
+            var port = Constants.DefaultPort;
+            var properties = new Dictionary<string, object>();
+            var supportedMethods = new List<Methods>();
+            string id = null;
+            var model = default(Model);
+
+            foreach (var part in split)
             {
-                string[] split = ssdpMessage.Split(new string[] { Constants.LineSeparator }, StringSplitOptions.RemoveEmptyEntries);
-                string host = null;
-                int port = Constants.DefaultPort;
-                Dictionary<string, object> properties = new Dictionary<string, object>();
-                List<METHODS> supportedMethods = new List<METHODS>();
-                string id = null, firmwareVersion = null;
-                MODEL model = default(MODEL);
-
-                foreach (string part in split)
+                if (part.StartsWith(YeelightLocationMatch))
                 {
-                    if (part.StartsWith(_yeelightlocationMatch))
+                    var url = part.Substring(YeelightLocationMatch.Length);
+                    var hostnameParts = url.Split(Colon, StringSplitOptions.RemoveEmptyEntries);
+                    if (hostnameParts.Length >= 1)
                     {
-                        string url = part.Substring(_yeelightlocationMatch.Length);
-                        string[] hostnameParts = url.Split(_colon, StringSplitOptions.RemoveEmptyEntries);
-                        if (hostnameParts.Length >= 1)
-                        {
-                            host = hostnameParts[0];
-                        }
-                        if (hostnameParts.Length == 2)
-                        {
-                            int.TryParse(hostnameParts[1], out port);
-                        }
+                        host = hostnameParts[0];
                     }
-                    else
+                    if (hostnameParts.Length == 2)
                     {
-                        string[] property = part.Split(_colon);
-                        if (property.Length == 2)
-                        {
-                            string propertyName = property[0].Trim();
-                            string propertyValue = property[1].Trim();
-
-                            if (_allPropertyRealNames.Contains(propertyName))
-                            {
-                                properties.Add(propertyName, propertyValue);
-                            }
-                            else if (propertyName == "id")
-                            {
-                                id = propertyValue;
-                            }
-                            else if (propertyName == "model")
-                            {
-                                if (!RealNameAttributeExtension.TryParseByRealName(propertyValue, out model))
-                                {
-                                    model = default(MODEL);
-                                }
-                            }
-                            else if (propertyName == "support")
-                            {
-                                string[] supportedOperations = propertyValue.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-
-                                foreach (string operation in supportedOperations)
-                                {
-                                    if (RealNameAttributeExtension.TryParseByRealName(operation, out METHODS method))
-                                    {
-                                        supportedMethods.Add(method);
-                                    }
-                                }
-                            }
-                            else if (propertyName == "fw_ver")
-                            {
-                                firmwareVersion = propertyValue;
-                            }
-                        }
+                        int.TryParse(hostnameParts[1], out port);
                     }
                 }
-                return new Device(host, port, id, model, firmwareVersion, properties, supportedMethods);
+                else
+                {
+                    var property = part.Split(Colon);
+                    if (property.Length != 2) continue;
+                    var propertyName = property[0].Trim();
+                    var propertyValue = property[1].Trim();
+
+                    if (AllPropertyRealNames.Contains(propertyName))
+                    {
+                        properties.Add(propertyName, propertyValue);
+                    }
+                    else switch (propertyName)
+                    {
+                        case "id":
+                            id = propertyValue;
+                            break;
+                        case "model":
+                        {
+                            if (!RealNameAttributeExtension.TryParseByRealName(propertyValue, out model))
+                            {
+                                model = default;
+                            }
+
+                            break;
+                        }
+                        case "support":
+                        {
+                            var supportedOperations = propertyValue.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+
+                            foreach (var operation in supportedOperations)
+                            {
+                                if (RealNameAttributeExtension.TryParseByRealName(operation, out Methods method))
+                                {
+                                    supportedMethods.Add(method);
+                                }
+                            }
+
+                            break;
+                        }
+                        case "fw_ver":
+                            break;
+                    }
+                }
             }
+            return new Device(host, port, id, model, properties, supportedMethods);
 
-            return null;
         }
-
-        #endregion Private Methods
     }
 }
